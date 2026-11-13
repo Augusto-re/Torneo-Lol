@@ -18,7 +18,7 @@ export const CONFIG = {
   /** Si solo hay pico (no rankeó esta temporada), se descuenta esto. */
   peakOnlyPenalty: 150,
   /** Si el rango sale de flex en vez de solo/duo, se descuenta esto. */
-  flexPenalty: 200,
+  flexPenalty: 150,
 
   /** Cuántos puntos de rango vale 1 desvío estándar de rendimiento (KDA, daño, etc.). */
   perfPoints: 150,
