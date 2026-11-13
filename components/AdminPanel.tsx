@@ -275,6 +275,7 @@ export default function AdminPanel() {
                     </td>
                     <td>
                       <select value={pl.alt_role} onChange={(e) => patch(pl.id, { alt_role: e.target.value })}>
+                        <option value="FILL">Cualquiera</option>
                         {ROLES.map((r) => (
                           <option key={r} value={r}>
                             {ROLE_LABEL[r]}

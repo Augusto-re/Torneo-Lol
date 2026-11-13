@@ -9,6 +9,15 @@ export const ROLE_LABEL: Record<Role, string> = {
   UTILITY: "Support",
 };
 
+/** La alternativa puede ser una línea o "FILL" (cualquier línea). */
+export type AltRole = Role | "FILL";
+export function isAltRole(x: unknown): x is AltRole {
+  return x === "FILL" || isRole(x);
+}
+export function altLabel(x: AltRole): string {
+  return x === "FILL" ? "Cualquiera" : ROLE_LABEL[x];
+}
+
 export const TIERS = [
   "IRON",
   "BRONZE",
@@ -57,7 +66,7 @@ export interface PlayerRow {
   tag_line: string;
   puuid: string | null;
   main_role: Role;
-  alt_role: Role;
+  alt_role: AltRole;
   peak_tier: Tier | null;
   peak_division: Division | null;
   active: boolean;

@@ -3,7 +3,7 @@ import Stars from "@/components/Stars";
 import { listMatches, listPlayers } from "@/lib/db";
 import { computeRatings, rankLabel } from "@/lib/scoring";
 import { computeStars } from "@/lib/stars";
-import { RatedPlayer, ROLE_LABEL } from "@/lib/types";
+import { altLabel, RatedPlayer, ROLE_LABEL } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +62,7 @@ export default async function Home() {
                     <span className="muted">#{r.player.tag_line}</span>
                   </td>
                   <td>
-                    {ROLE_LABEL[r.player.main_role]} <span className="muted">/ {ROLE_LABEL[r.player.alt_role]}</span>
+                    {ROLE_LABEL[r.player.main_role]} <span className="muted">/ {altLabel(r.player.alt_role)}</span>
                   </td>
                   <td className="small">{currentRank(r)}</td>
                   <td>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getAccount, getLeagueEntries, leagueFields, RiotError } from "@/lib/riot";
 import { requireAdmin } from "@/lib/auth";
-import { APEX_TIERS, isDivision, isRole, isTier } from "@/lib/types";
+import { APEX_TIERS, isAltRole, isDivision, isRole, isTier } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
   const match = typeof riotId === "string" ? riotId.trim().match(/^(.{3,16})#([A-Za-z0-9]{2,5})$/) : null;
   if (!match) return NextResponse.json({ error: "El Riot ID tiene que ser Nombre#TAG" }, { status: 400 });
-  if (!isRole(mainRole) || !isRole(altRole))
+  if (!isRole(mainRole) || !isAltRole(altRole))
     return NextResponse.json({ error: "Elegí línea principal y alternativa" }, { status: 400 });
   if (mainRole === altRole)
     return NextResponse.json({ error: "La alternativa tiene que ser distinta a la principal" }, { status: 400 });

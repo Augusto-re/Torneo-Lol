@@ -6,7 +6,7 @@ create table if not exists players (
   tag_line text not null,
   puuid text unique,
   main_role text not null check (main_role in ('TOP','JUNGLE','MIDDLE','BOTTOM','UTILITY')),
-  alt_role  text not null check (alt_role  in ('TOP','JUNGLE','MIDDLE','BOTTOM','UTILITY')),
+  alt_role  text not null check (alt_role  in ('TOP','JUNGLE','MIDDLE','BOTTOM','UTILITY','FILL')),  -- FILL = cualquier línea
   peak_tier text,          -- IRON ... CHALLENGER (rango histórico máximo, lo carga el jugador)
   peak_division text,      -- I, II, III, IV (null para Master+)
   active boolean not null default true,   -- si participa del armado de equipos

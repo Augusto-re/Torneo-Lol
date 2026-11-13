@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { APEX_TIERS, isDivision, isRole, isTier } from "@/lib/types";
+import { APEX_TIERS, isAltRole, isDivision, isRole, isTier } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const b = await req.json().catch(() => ({}));
   const patch: Record<string, unknown> = {};
   if (isRole(b.main_role)) patch.main_role = b.main_role;
-  if (isRole(b.alt_role)) patch.alt_role = b.alt_role;
+  if (isAltRole(b.alt_role)) patch.alt_role = b.alt_role;
   if (typeof b.active === "boolean") patch.active = b.active;
   if (typeof b.manual_adjust === "number" && Number.isFinite(b.manual_adjust))
     patch.manual_adjust = Math.round(b.manual_adjust);

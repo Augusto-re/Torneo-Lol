@@ -152,7 +152,8 @@ export function computeRatings(players: PlayerRow[], matches: MatchRow[], matchC
     const ratingByRole = {} as Record<Role, number>;
     const fitByRole = {} as Record<Role, Fit>;
     for (const r of ROLES) {
-      const fit: Fit = r === p.main_role ? "main" : r === p.alt_role ? "alt" : "fill";
+      // Si la alternativa es FILL, cualquier línea que no sea la principal cuenta como alternativa.
+      const fit: Fit = r === p.main_role ? "main" : r === p.alt_role || p.alt_role === "FILL" ? "alt" : "fill";
       const penalty = fit === "main" ? 0 : fit === "alt" ? CONFIG.altPenalty : CONFIG.fillPenalty;
       const pr = perfByRole[r] ?? perf;
       ratingByRole[r] = Math.round(score + CONFIG.perfPoints * pr + (p.manual_adjust ?? 0) - penalty);

@@ -61,6 +61,7 @@ export default function RegisterForm({ needsCode }: { needsCode: boolean }) {
           <label>Alternativa</label>
           <select value={altRole} onChange={(e) => setAltRole(e.target.value)} required>
             <option value="">Elegí…</option>
+            <option value="FILL">Cualquiera (fill)</option>
             {ROLES.filter((r) => r !== mainRole).map((r) => (
               <option key={r} value={r}>
                 {ROLE_LABEL[r]}
