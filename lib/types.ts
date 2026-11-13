@@ -131,6 +131,7 @@ export interface DraftPlayer {
   fit: Fit;
   rating: number;
   rankLabel: string;
+  stars?: number;
 }
 
 export interface DraftTeam {
@@ -140,6 +141,7 @@ export interface DraftTeam {
 }
 
 export interface DraftData {
+  name?: string;
   teams: DraftTeam[];
   bench: { playerId: string; name: string }[];
 }

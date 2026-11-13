@@ -37,6 +37,10 @@ Las unidades son puntos de rango: 100 puntos = 1 división y 400 puntos = 1 tier
 
 Todos los pesos están en `lib/config.ts`.
 
+**Estrellas (0.5 a 5):** son una traducción del rating. En modo `absolute` (el que viene por defecto): Plata II ≈ 2★, Oro II = 3★, Platino II = 3.5★, Esmeralda II = 4★, Diamante II = 4.5★ y Master+ = 5★. En modo `relative`, el mejor del grupo tiene 5★ y el más flojo 1★. Se cambia con `starsMode` en `lib/config.ts`.
+
+**Torneos:** todos los amigos quedan guardados. Para cada torneo, en `/admin` marcás quién juega (columna "Juega", o los botones Todos/Ninguno), armás los equipos y los publicás con un nombre. `/equipos` muestra el último torneo y el historial de los anteriores.
+
 El armado busca que la suma de cada equipo sea lo más pareja posible, que cada uno juegue su principal o su alternativa y que los duelos de cada línea también sean parejos. Es aleatorio: **Regenerar** da otra combinación igual de buena.
 
 `npm run test:balance` lo prueba con 30 jugadores inventados.

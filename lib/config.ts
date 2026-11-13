@@ -3,6 +3,14 @@
  * Las unidades son "puntos de rango": 100 puntos = 1 división (ej. Oro II → Oro I).
  */
 export const CONFIG = {
+  /**
+   * Estrellas (0.5 a 5, de a media):
+   *  - "absolute": por nivel real. Hierro IV = 0.5★, Plata II ≈ 2★, Oro II = 3★, Platino II = 3.5★,
+   *    Esmeralda II = 4★, Diamante II = 4.5★, Master+ = 5★.
+   *  - "relative": el mejor del grupo tiene 5★ y el más flojo 1★.
+   */
+  starsMode: "absolute" as "absolute" | "relative",
+
   /** Rango por defecto si alguien no tiene rango actual ni pico cargado (Plata II). */
   defaultRankScore: 1000,
   /** Cuánto pesa el pico histórico cuando también hay rango actual (0..1). */

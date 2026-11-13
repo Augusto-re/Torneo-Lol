@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { balanceTeams, BalanceResult } from "@/lib/balance";
 import { rankLabel } from "@/lib/scoring";
+import { computeStars } from "@/lib/stars";
+import Stars from "./Stars";
 import {
   APEX_TIERS,
   DIVISIONS,
@@ -36,6 +38,9 @@ export default function AdminPanel() {
   const [log, setLog] = useState<string[]>([]);
   const [result, setResult] = useState<{ res: BalanceResult; pool: RatedPlayer[]; bench: RatedPlayer[] } | null>(null);
   const [notice, setNotice] = useState("");
+  const [tournamentName, setTournamentName] = useState(
+    () => `Torneo ${new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}`,
+  );
 
   const addLog = (s: string) => setLog((l) => [...l.slice(-200), s]);
 
@@ -116,6 +121,17 @@ export default function AdminPanel() {
   }
 
   const active = useMemo(() => players.filter((p) => p.player.active), [players]);
+  const stars = useMemo(() => computeStars(players), [players]);
+
+  async function setAll(value: boolean) {
+    await fetch("/api/players", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: value }),
+    });
+    setResult(null);
+    await load();
+  }
   const teamCount = Math.floor(active.length / 5);
   const extra = active.length % 5;
 
@@ -135,6 +151,7 @@ export default function AdminPanel() {
     if (!result) return;
     const { res, pool, bench } = result;
     const data: DraftData = {
+      name: tournamentName.trim() || "Torneo",
       teams: res.teams.map((team, t) => ({
         name: `Equipo ${t + 1}`,
         total: res.totals[t],
@@ -148,6 +165,7 @@ export default function AdminPanel() {
             fit: p.fitByRole[role],
             rating: p.ratingByRole[role],
             rankLabel: currentRank(p),
+            stars: stars[p.player.id],
           };
         }),
       })),
@@ -175,7 +193,7 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      <h2>Jugadores ({players.length}, activos {active.length})</h2>
+      <h2>Jugadores ({players.length})</h2>
       <div className="toolbar">
         <button disabled={syncing || !players.length} onClick={() => syncAll(players)}>
           {syncing ? "Sincronizando…" : "Sincronizar todos con Riot"}
@@ -194,7 +212,7 @@ export default function AdminPanel() {
         <table>
           <thead>
             <tr>
-              <th>Activo</th>
+              <th>Juega</th>
               <th>Jugador</th>
               <th>Principal</th>
               <th>Alternativa</th>
@@ -212,13 +230,14 @@ export default function AdminPanel() {
               <th className="num">Rend.</th>
               <th className="num">Ajuste</th>
               <th className="num">Rating</th>
+              <th>Nivel</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {loading && !players.length ? (
               <tr>
-                <td colSpan={19} className="muted">
+                <td colSpan={20} className="muted">
                   Cargando…
                 </td>
               </tr>
@@ -229,7 +248,14 @@ export default function AdminPanel() {
                 return (
                   <tr key={pl.id} className={pl.active ? "" : "inactive"}>
                     <td>
-                      <input type="checkbox" checked={pl.active} onChange={(e) => patch(pl.id, { active: e.target.checked })} />
+                      <input
+                        type="checkbox"
+                        checked={pl.active}
+                        onChange={(e) => {
+                          setResult(null);
+                          patch(pl.id, { active: e.target.checked });
+                        }}
+                      />
                     </td>
                     <td>
                       <a href={logLink(p)} target="_blank" rel="noreferrer">
@@ -311,6 +337,9 @@ export default function AdminPanel() {
                       <b>{p.rating}</b>
                     </td>
                     <td>
+                      <Stars value={stars[pl.id]} />
+                    </td>
+                    <td>
                       <button className="secondary tiny" disabled={syncing} onClick={() => syncAll([p])}>
                         Sync
                       </button>{" "}
@@ -332,13 +361,44 @@ export default function AdminPanel() {
       </p>
 
       <h2>Armado de equipos</h2>
+      <div className="toolbar">
+        <span>
+          Juegan este torneo: <b>{active.length}</b> de {players.length}
+          {teamCount > 0 && (
+            <span className="muted">
+              {" "}
+              → {teamCount} equipo{teamCount > 1 ? "s" : ""}
+              {extra > 0 ? ` + ${extra} suplente${extra > 1 ? "s" : ""}` : ""}
+            </span>
+          )}
+        </span>
+        <button className="secondary tiny" onClick={() => setAll(true)}>
+          Todos
+        </button>
+        <button className="secondary tiny" onClick={() => setAll(false)}>
+          Ninguno
+        </button>
+        <span className="muted small">Marcá en la columna &quot;Juega&quot; quiénes participan esta vez.</span>
+      </div>
       {teamCount === 0 ? (
         <p className="muted">Hacen falta al menos 5 jugadores activos.</p>
       ) : (
         <>
           <div className="toolbar">
-            <button onClick={generate}>{result ? "Regenerar" : `Armar ${teamCount} equipos`}</button>
-            {result && <button className="secondary" onClick={publish}>Publicar</button>}
+            <button onClick={generate}>{result ? "Regenerar" : `Armar ${teamCount} equipo${teamCount > 1 ? "s" : ""}`}</button>
+            {result && (
+              <>
+                <input
+                  style={{ width: 200 }}
+                  value={tournamentName}
+                  onChange={(e) => setTournamentName(e.target.value)}
+                  placeholder="Nombre del torneo"
+                />
+                <button className="secondary" onClick={publish}>
+                  Publicar
+                </button>
+              </>
+            )}
             {extra > 0 && (
               <span className="muted small">
                 Hay {active.length} activos: sobran {extra}, que quedan de suplentes (los últimos inscriptos). Desmarcá
@@ -347,14 +407,20 @@ export default function AdminPanel() {
             )}
           </div>
           {notice && <div className="msg ok">{notice}</div>}
-          {result && <Teams result={result} />}
+          {result && <Teams result={result} stars={stars} />}
         </>
       )}
     </>
   );
 }
 
-function Teams({ result }: { result: { res: BalanceResult; pool: RatedPlayer[]; bench: RatedPlayer[] } }) {
+function Teams({
+  result,
+  stars,
+}: {
+  result: { res: BalanceResult; pool: RatedPlayer[]; bench: RatedPlayer[] };
+  stars: Record<string, number>;
+}) {
   const { res, pool, bench } = result;
   return (
     <>
@@ -388,7 +454,9 @@ function Teams({ result }: { result: { res: BalanceResult; pool: RatedPlayer[]; 
                       {riotName(p)}{" "}
                       <span className={`badge ${fit}`}>{fit === "main" ? "main" : fit === "alt" ? "alt" : "fill"}</span>
                     </span>
-                    <span className="muted small">{p.ratingByRole[role]}</span>
+                    <span className="muted small" title={`Rating en esta línea: ${p.ratingByRole[role]}`}>
+                      <Stars value={stars[p.player.id]} />
+                    </span>
                   </li>
                 );
               })}

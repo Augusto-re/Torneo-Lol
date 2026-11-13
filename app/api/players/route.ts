@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getAccount, RiotError } from "@/lib/riot";
+import { getAccount, getLeagueEntries, leagueFields, RiotError } from "@/lib/riot";
+import { requireAdmin } from "@/lib/auth";
 import { APEX_TIERS, isDivision, isRole, isTier } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
   let gameName = match[1].trim();
   let tagLine = match[2];
   let puuid: string | null = null;
+  let rank: Record<string, string | number | null> = {};
   try {
     const acc = await getAccount(gameName, tagLine);
     puuid = acc.puuid;
@@ -40,6 +42,13 @@ export async function POST(req: Request) {
     }
     // Si Riot falla (key vencida, límite), lo inscribimos igual y se resuelve al sincronizar.
   }
+  if (puuid) {
+    try {
+      rank = leagueFields(await getLeagueEntries(puuid)); // así las estrellas aparecen al toque
+    } catch {
+      rank = {};
+    }
+  }
 
   const { error } = await db().from("players").insert({
     game_name: gameName,
@@ -49,10 +58,22 @@ export async function POST(req: Request) {
     alt_role: altRole,
     peak_tier: tier,
     peak_division: division,
+    ...rank,
   });
   if (error) {
     if (error.code === "23505") return NextResponse.json({ error: "Ese jugador ya está inscripto" }, { status: 409 });
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   return NextResponse.json({ ok: true, name: `${gameName}#${tagLine}` });
+}
+
+/** Admin: marcar a todos (o a nadie) como participantes del próximo torneo. */
+export async function PATCH(req: Request) {
+  const denied = await requireAdmin();
+  if (denied) return denied;
+  const { active } = await req.json().catch(() => ({}));
+  if (typeof active !== "boolean") return NextResponse.json({ error: "Falta active" }, { status: 400 });
+  const { error } = await db().from("players").update({ active }).not("id", "is", null);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
 }

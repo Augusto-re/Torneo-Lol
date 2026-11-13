@@ -91,3 +91,23 @@ export interface RiotMatch {
 export function getMatch(matchId: string) {
   return riot<RiotMatch>(REGION, `/lol/match/v5/matches/${matchId}`);
 }
+
+const TIERS_OK = ["IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"];
+const DIVS_OK = ["I", "II", "III", "IV"];
+
+/** Convierte las entradas de league-v4 en las columnas solo_* / flex_* de la tabla players. */
+export function leagueFields(entries: LeagueEntry[]): Record<string, string | number | null> {
+  const out: Record<string, string | number | null> = {};
+  for (const [queue, prefix] of [
+    ["RANKED_SOLO_5x5", "solo"],
+    ["RANKED_FLEX_SR", "flex"],
+  ] as const) {
+    const e = entries.find((x) => x.queueType === queue);
+    out[`${prefix}_tier`] = e && TIERS_OK.includes(e.tier) ? e.tier : null;
+    out[`${prefix}_division`] = e && DIVS_OK.includes(e.rank) ? e.rank : null;
+    out[`${prefix}_lp`] = e?.leaguePoints ?? null;
+    out[`${prefix}_wins`] = e?.wins ?? null;
+    out[`${prefix}_losses`] = e?.losses ?? null;
+  }
+  return out;
+}

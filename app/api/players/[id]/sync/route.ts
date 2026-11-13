@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getAccount, getLeagueEntries, getMatch, getRankedMatchIds, RiotError } from "@/lib/riot";
-import { PlayerRow, isDivision, isTier } from "@/lib/types";
+import { getAccount, getLeagueEntries, getMatch, getRankedMatchIds, leagueFields, RiotError } from "@/lib/riot";
+import { PlayerRow } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -55,16 +55,7 @@ async function syncProfile(player: PlayerRow): Promise<string[]> {
   }
 
   const entries = await getLeagueEntries(puuid);
-  const solo = entries.find((e) => e.queueType === "RANKED_SOLO_5x5");
-  const flex = entries.find((e) => e.queueType === "RANKED_FLEX_SR");
-  const pick = (e: typeof solo, prefix: string) => ({
-    [`${prefix}_tier`]: e && isTier(e.tier) ? e.tier : null,
-    [`${prefix}_division`]: e && isDivision(e.rank) ? e.rank : null,
-    [`${prefix}_lp`]: e?.leaguePoints ?? null,
-    [`${prefix}_wins`]: e?.wins ?? null,
-    [`${prefix}_losses`]: e?.losses ?? null,
-  });
-  Object.assign(update, pick(solo, "solo"), pick(flex, "flex"), {
+  Object.assign(update, leagueFields(entries), {
     last_synced_at: new Date().toISOString(),
     sync_error: null,
   });

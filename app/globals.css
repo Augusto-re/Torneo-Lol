@@ -66,3 +66,12 @@ td input[type="checkbox"] { width: auto; }
 .summary b { color: var(--gold); }
 .log { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); max-height: 140px; overflow-y: auto; background: #0e1420; border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; margin-top: 10px; white-space: pre-wrap; }
 ul.plain { padding-left: 18px; }
+.stars { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.stars-track { position: relative; display: inline-block; }
+.stars-bg, .stars-fg { font-size: 16px; letter-spacing: 1px; line-height: 1; }
+.stars-bg { color: #2c374b; }
+.stars-fg { position: absolute; left: 0; top: 0; color: var(--gold); overflow: hidden; white-space: nowrap; }
+.stars-num { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+.pill { padding: 5px 11px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); text-decoration: none; font-size: 13px; }
+.pill.on { color: var(--text); border-color: var(--gold); }
